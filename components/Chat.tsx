@@ -13,6 +13,7 @@ export default function Chat({ input, setInput, messages, setMessages }: {
     messages: ChatMessages[]
     setMessages: Dispatch<SetStateAction<ChatMessages[]>>
 }) {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
     const hasMessages = messages.length > 0;
 
     const handleSend = async () => {
@@ -32,7 +33,7 @@ export default function Chat({ input, setInput, messages, setMessages }: {
                 }
             ])
             setInput("");
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
+            const response = await fetch(`${apiBase}/api/chat`, {
                 method: "POST",
                 body: JSON.stringify({ query }),
                 headers: {
