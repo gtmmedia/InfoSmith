@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, DM_Sans } from "next/font/google"
+import { Geist_Mono, DM_Sans } from "next/font/google"
 import type { Metadata } from "next"
 
 import "./globals.css"
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     "LangChain",
     "Qdrant",
   ],
-  authors: [{ name: "Akshat Sipany" }],
+  authors: [{ name: "Gautam Mohta" }],
   openGraph: {
     title: "InfoSmith — AI Document Assistant",
     description:
