@@ -1,4 +1,4 @@
-# NoteBook-Llm mini clone
+# Info-Smith
 
 An AI-powered document assistant that lets you **upload documents and chat with them** using Retrieval-Augmented Generation (RAG). Get accurate, context-grounded answers — no hallucinations.
 
