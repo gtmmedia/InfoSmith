@@ -70,7 +70,7 @@ export default function Chat({ input, setInput, messages, setMessages }: {
                 <Input
                     value={input}
                     className="h-10 min-h-10 rounded-full py-2 pr-12 pl-4 shadow-sm"
-                    placeholder="Message ScalerbookLM..."
+                    placeholder="Message InfoSmith..."
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key === "Enter") {

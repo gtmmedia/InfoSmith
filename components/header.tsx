@@ -6,7 +6,7 @@ export default function Header() {
             <div className="flex items-center gap-3">
                 <SidebarTrigger className="-ml-1" />
                 <div>
-                    <h1 className="text-lg font-semibold tracking-tight">ScalerbookLM</h1>
+                    <h1 className="text-lg font-semibold tracking-tight">InfoSmith</h1>
                 </div>
             </div>
         </header>

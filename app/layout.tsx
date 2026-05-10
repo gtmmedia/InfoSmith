@@ -10,13 +10,13 @@ import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: {
-    default: "ScalerbookLM — AI Document Assistant",
-    template: "%s | ScalerbookLM",
+    default: "InfoSmith — AI Document Assistant",
+    template: "%s | InfoSmith",
   },
   description:
-    "Upload your documents and chat with them using AI. ScalerbookLM provides context-grounded answers powered by RAG and vector embeddings.",
+    "Upload your documents and chat with them using AI. InfoSmith provides context-grounded answers powered by RAG and vector embeddings.",
   keywords: [
-    "ScalerbookLM",
+    "InfoSmith",
     "RAG",
     "document chat",
     "AI assistant",
@@ -26,18 +26,18 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Akshat Sipany" }],
   openGraph: {
-    title: "ScalerbookLM — AI Document Assistant",
+    title: "InfoSmith — AI Document Assistant",
     description:
-      "Upload documents and get reliable, context-grounded answers with ScalerbookLM.",
+      "Upload documents and get reliable, context-grounded answers with InfoSmith.",
     type: "website",
     locale: "en_US",
-    siteName: "ScalerbookLM",
+    siteName: "InfoSmith",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ScalerbookLM — AI Document Assistant",
+    title: "InfoSmith — AI Document Assistant",
     description:
-      "Upload documents and get reliable, context-grounded answers with ScalerbookLM.",
+      "Upload documents and get reliable, context-grounded answers with InfoSmith.",
   },
   icons: {
     icon: "/favicon.ico",

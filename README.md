@@ -1,4 +1,4 @@
-# ScalerbookLM
+# NoteBook-Llm mini clone
 
 An AI-powered document assistant that lets you **upload documents and chat with them** using Retrieval-Augmented Generation (RAG). Get accurate, context-grounded answers — no hallucinations.
 
@@ -72,8 +72,8 @@ An AI-powered document assistant that lets you **upload documents and chat with 
 
 ```bash
 # Clone the repository
-git clone https://github.com/akshat-code21/ScalerbookLM.git
-cd scalerbooklm
+git clone https://github.com/akshat-code21/InfoSmith.git
+cd InfoSmith
 
 # Install dependencies
 bun install
