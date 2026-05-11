@@ -6,9 +6,42 @@ import { getStoredUploadPath, getUploadsDir } from "@/lib/uploads"
 export const runtime = "nodejs"
 const useBlobStore =
   process.env.NODE_ENV === "production" && Boolean(process.env.BLOB_READ_WRITE_TOKEN)
+const allowedOrigins = new Set(
+  [process.env.NEXT_PUBLIC_API_URL, process.env.ALLOWED_ORIGINS]
+    .flatMap((value) => (value ? value.split(",") : []))
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value) => value.replace(/\/$/, "")),
+)
+
+const isAllowedOrigin = (origin: string) => {
+  if (allowedOrigins.size === 0) return true
+  if (allowedOrigins.has(origin)) return true
+  if (origin.endsWith(".vercel.app")) return true
+  return false
+}
+
+const getCorsHeaders = (origin: string | null): Record<string, string> => {
+  const headers: Record<string, string> = {}
+  if (!origin || !isAllowedOrigin(origin)) return headers
+
+  headers["Access-Control-Allow-Origin"] = origin
+  headers["Access-Control-Allow-Methods"] = "GET,POST,DELETE,OPTIONS"
+  headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+  headers["Access-Control-Max-Age"] = "86400"
+  headers["Vary"] = "Origin"
+
+  return headers
+}
+
+export async function OPTIONS(req: NextRequest) {
+  const headers = getCorsHeaders(req.headers.get("origin"))
+  return new NextResponse(null, { status: 204, headers })
+}
 
 export async function POST(req: NextRequest) {
   let storedFileName: string | undefined
+  const headers = getCorsHeaders(req.headers.get("origin"))
   try {
     const formData = await req.formData()
     const file = formData.get("file")
@@ -41,6 +74,7 @@ export async function POST(req: NextRequest) {
         },
         {
           status: 400,
+          headers,
         },
       )
     }
@@ -48,7 +82,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       name: storedFileName,
-    })
+    }, { headers })
   } catch (error) {
     console.error(error)
     if (storedFileName) {
@@ -61,6 +95,7 @@ export async function POST(req: NextRequest) {
       },
       {
         status: 500,
+        headers,
       }
     )
   }
