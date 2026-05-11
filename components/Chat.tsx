@@ -13,7 +13,8 @@ export default function Chat({ input, setInput, messages, setMessages }: {
     messages: ChatMessages[]
     setMessages: Dispatch<SetStateAction<ChatMessages[]>>
 }) {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
+    const rawApiBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
+    const apiBase = rawApiBase.replace(/\/api$/i, "");
     const hasMessages = messages.length > 0;
 
     const handleSend = async () => {

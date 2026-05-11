@@ -59,7 +59,8 @@ const EmbeddingIndicator = () => (
 );
 
 const Example = () => {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
+  const rawApiBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
+  const apiBase = rawApiBase.replace(/\/api$/i, "");
   const [files, setFiles] = React.useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = React.useState<UploadedFile[]>([]);
   const [fileStatuses, setFileStatuses] = React.useState<Map<string, FileStatus>>(new Map());
@@ -95,7 +96,7 @@ const Example = () => {
     }
 
     loadUploadedFiles();
-  }, []);
+  }, [apiBase]);
 
   const onFileReject = React.useCallback((file: File, message: string) => {
     toast(message, {
@@ -141,12 +142,10 @@ const Example = () => {
       for (const file of files) {
         setStatus(file.name, "uploading");
 
-        const { data } = await axios.post(`${apiBase}/api/upload`, {
-          file: file
-        }, {
-          headers: {
-            "Content-Type": "multipart/form-data"
-          },
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const { data } = await axios.post(`${apiBase}/api/upload`, formData, {
           onUploadProgress: (e) => {
             const total = e.total || 0;
             const pct = total > 0 ? Math.round((e.loaded / total) * 100) : 0;

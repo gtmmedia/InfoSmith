@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getStoredUploadPath } from "@/lib/uploads"
 
 export const runtime = "nodejs"
+const useBlobStore =
+  process.env.NODE_ENV === "production" && Boolean(process.env.BLOB_READ_WRITE_TOKEN)
 
 const contentTypes: Record<string, string> = {
   ".csv": "text/csv",
@@ -37,6 +39,26 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
   }
 
   try {
+    if (useBlobStore) {
+      const { list } = await import("@vercel/blob")
+      const { blobs } = await list({ prefix: name, limit: 1 })
+      const blob = blobs.find((item) => item.pathname === name)
+
+      if (!blob) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "File not found",
+          },
+          {
+            status: 404,
+          },
+        )
+      }
+
+      return NextResponse.redirect(blob.url)
+    }
+
     const file = await fs.readFile(getStoredUploadPath(name))
     const contentType =
       contentTypes[path.extname(name).toLowerCase()] ?? "application/octet-stream"

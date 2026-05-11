@@ -4,28 +4,45 @@ import { ingestFile } from "@/lib/ingest"
 import { getStoredUploadPath, getUploadsDir } from "@/lib/uploads"
 
 export const runtime = "nodejs"
+const useBlobStore =
+  process.env.NODE_ENV === "production" && Boolean(process.env.BLOB_READ_WRITE_TOKEN)
 
 export async function POST(req: NextRequest) {
   let storedFileName: string | undefined
   try {
     const formData = await req.formData()
-    const body = Object.fromEntries(formData)
-    const file = (body.file as Blob) || null
+    const file = formData.get("file")
 
     const prefix = Date.now()
 
-    if (file) {
-      storedFileName = `${prefix}-${(body.file as File).name.replaceAll("/", "-")}`
+    if (file instanceof File) {
+      storedFileName = `${prefix}-${file.name.replaceAll("/", "-")}`
       const buffer = Buffer.from(await file.arrayBuffer())
       await fs.mkdir(getUploadsDir(), { recursive: true })
 
-      //await fs.writeFile(getStoredUploadPath(storedFileName), buffer)
+      await fs.writeFile(getStoredUploadPath(storedFileName), buffer)
 
-      await ingestFile(body.file as File, storedFileName)
+      await ingestFile(file, storedFileName)
+
+      if (useBlobStore) {
+        const { put } = await import("@vercel/blob")
+        await put(storedFileName, buffer, {
+          access: "public",
+          contentType: file.type || "application/octet-stream",
+        })
+
+        await fs.rm(getStoredUploadPath(storedFileName), { force: true })
+      }
     } else {
-      return NextResponse.json({
-        success: false,
-      })
+      return NextResponse.json(
+        {
+          success: false,
+          message: "File is required",
+        },
+        {
+          status: 400,
+        },
+      )
     }
 
     return NextResponse.json({

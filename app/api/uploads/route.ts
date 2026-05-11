@@ -8,9 +8,41 @@ import {
 } from "@/lib/uploads"
 
 export const runtime = "nodejs"
+const useBlobStore =
+  process.env.NODE_ENV === "production" && Boolean(process.env.BLOB_READ_WRITE_TOKEN)
 
 export async function GET() {
   try {
+    if (useBlobStore) {
+      const { list } = await import("@vercel/blob")
+      const { blobs } = await list()
+
+      const files = blobs.map((blob) => {
+        const uploadedAt =
+          blob.uploadedAt instanceof Date
+            ? blob.uploadedAt
+            : new Date(blob.uploadedAt)
+
+        return {
+          name: blob.pathname,
+          originalName: getOriginalUploadName(blob.pathname),
+          size: blob.size,
+          url: `/api/uploads/${encodeURIComponent(blob.pathname)}`,
+          uploadedAt: uploadedAt.toISOString(),
+        }
+      })
+
+      files.sort(
+        (a, b) =>
+          new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(),
+      )
+
+      return NextResponse.json({
+        success: true,
+        files,
+      })
+    }
+
     const uploadDir = getUploadsDir()
     await fs.mkdir(uploadDir, { recursive: true })
 
@@ -71,7 +103,27 @@ export async function DELETE(req: NextRequest) {
       )
     }
 
-    await fs.unlink(getStoredUploadPath(name))
+    if (useBlobStore) {
+      const { del, list } = await import("@vercel/blob")
+      const { blobs } = await list({ prefix: name, limit: 1 })
+      const blob = blobs.find((item) => item.pathname === name)
+
+      if (!blob) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "File not found",
+          },
+          {
+            status: 404,
+          },
+        )
+      }
+
+      await del(blob.url)
+    } else {
+      await fs.unlink(getStoredUploadPath(name))
+    }
 
     return NextResponse.json({
       success: true,
