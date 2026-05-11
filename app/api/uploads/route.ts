@@ -25,15 +25,17 @@ const isAllowedOrigin = (origin: string) => {
   return false
 }
 
-const getCorsHeaders = (origin: string | null) => {
-  if (!origin || !isAllowedOrigin(origin)) return {}
-  return {
-    "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "GET,POST,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Max-Age": "86400",
-    "Vary": "Origin",
-  }
+const getCorsHeaders = (origin: string | null): Record<string, string> => {
+  const headers: Record<string, string> = {}
+  if (!origin || !isAllowedOrigin(origin)) return headers
+
+  headers["Access-Control-Allow-Origin"] = origin
+  headers["Access-Control-Allow-Methods"] = "GET,POST,DELETE,OPTIONS"
+  headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+  headers["Access-Control-Max-Age"] = "86400"
+  headers["Vary"] = "Origin"
+
+  return headers
 }
 
 export async function OPTIONS(req: NextRequest) {
