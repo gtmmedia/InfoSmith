@@ -21,15 +21,15 @@ const isAllowedOrigin = (origin: string) => {
   return false
 }
 
-const getCorsHeaders = (origin: string | null): Record<string, string> => {
-  const headers: Record<string, string> = {}
+const getCorsHeaders = (origin: string | null) => {
+  const headers = new Headers()
   if (!origin || !isAllowedOrigin(origin)) return headers
 
-  headers["Access-Control-Allow-Origin"] = origin
-  headers["Access-Control-Allow-Methods"] = "GET,POST,DELETE,OPTIONS"
-  headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-  headers["Access-Control-Max-Age"] = "86400"
-  headers["Vary"] = "Origin"
+  headers.set("Access-Control-Allow-Origin", origin)
+  headers.set("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS")
+  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+  headers.set("Access-Control-Max-Age", "86400")
+  headers.set("Vary", "Origin")
 
   return headers
 }
