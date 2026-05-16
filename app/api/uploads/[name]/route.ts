@@ -4,40 +4,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { getStoredUploadPath } from "@/lib/uploads"
 
 export const runtime = "nodejs"
-const useBlobStore =
-  process.env.NODE_ENV === "production" && Boolean(process.env.BLOB_READ_WRITE_TOKEN)
-const allowedOrigins = new Set(
-  [process.env.NEXT_PUBLIC_API_URL, process.env.ALLOWED_ORIGINS]
-    .flatMap((value) => (value ? value.split(",") : []))
-    .map((value) => value.trim())
-    .filter(Boolean)
-    .map((value) => value.replace(/\/$/, "")),
-)
-
-const isAllowedOrigin = (origin: string) => {
-  if (allowedOrigins.size === 0) return true
-  if (allowedOrigins.has(origin)) return true
-  if (origin.endsWith(".vercel.app")) return true
-  return false
-}
-
-const getCorsHeaders = (origin: string | null) => {
-  const headers = new Headers()
-  if (!origin || !isAllowedOrigin(origin)) return headers
-
-  headers.set("Access-Control-Allow-Origin", origin)
-  headers.set("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS")
-  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-  headers.set("Access-Control-Max-Age", "86400")
-  headers.set("Vary", "Origin")
-
-  return headers
-}
-
-export async function OPTIONS(req: NextRequest) {
-  const headers = getCorsHeaders(req.headers.get("origin"))
-  return new NextResponse(null, { status: 204, headers })
-}
 
 const contentTypes: Record<string, string> = {
   ".csv": "text/csv",
@@ -55,9 +21,8 @@ type RouteParams = {
   }>
 }
 
-export async function GET(req: NextRequest, { params }: RouteParams) {
+export async function GET(_req: NextRequest, { params }: RouteParams) {
   const { name } = await params
-  const headers = getCorsHeaders(req.headers.get("origin"))
 
   if (!name || path.basename(name) !== name) {
     return NextResponse.json(
@@ -67,33 +32,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       },
       {
         status: 400,
-        headers,
       },
     )
   }
 
   try {
-    if (useBlobStore) {
-      const { list } = await import("@vercel/blob")
-      const { blobs } = await list({ prefix: name, limit: 1 })
-      const blob = blobs.find((item) => item.pathname === name)
-
-      if (!blob) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "File not found",
-          },
-          {
-            status: 404,
-            headers,
-          },
-        )
-      }
-
-      return NextResponse.redirect(blob.url, { headers })
-    }
-
     const file = await fs.readFile(getStoredUploadPath(name))
     const contentType =
       contentTypes[path.extname(name).toLowerCase()] ?? "application/octet-stream"
@@ -101,7 +44,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     return new Response(file, {
       headers: {
         "Content-Type": contentType,
-        ...headers,
       },
     })
   } catch (error) {
@@ -113,7 +55,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       },
       {
         status: 404,
-        headers,
       },
     )
   }

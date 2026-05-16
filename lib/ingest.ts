@@ -1,8 +1,12 @@
 import path from "node:path"
+import fs from "node:fs"
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf"
 import { CSVLoader } from "@langchain/community/document_loaders/fs/csv"
 import { TextLoader } from "@langchain/classic/document_loaders/fs/text"
+import { Document } from "@langchain/core/documents"
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require("pdf-parse")
+
 import { Chroma } from "@langchain/community/vectorstores/chroma"
 import { createOpenRouterEmbeddings } from "./embedding"
 import { getUploadsDir } from "./uploads"
@@ -27,8 +31,17 @@ export const ingestFile = async (file: File, storedFileName?: string) => {
     const extension = path.extname(fileName).toLowerCase()
     let docs
     if (file.type === "application/pdf" || extension === ".pdf") {
-      const loader = new PDFLoader(filePath)
-      docs = await loader.load()
+      const buffer = fs.readFileSync(filePath)
+      const pdfData = await pdfParse(buffer)
+      docs = [
+        new Document({
+          pageContent: pdfData.text,
+          metadata: {
+            source: filePath,
+            totalPages: pdfData.numpages,
+          },
+        }),
+      ]
     } else if (file.type === "text/csv" || extension === ".csv") {
       const loader = new CSVLoader(filePath)
       docs = await loader.load()
