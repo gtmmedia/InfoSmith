@@ -82,7 +82,7 @@ const Example = () => {
   React.useEffect(() => {
     const loadUploadedFiles = async () => {
       try {
-        const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/uploads`);
+        const { data } = await axios.get(`/api/uploads`);
 
         if (data.success) {
           setUploadedFiles(data.files);
@@ -111,7 +111,7 @@ const Example = () => {
 
   const deleteUploadedFile = async (file: UploadedFile) => {
     try {
-      const { data } = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/uploads`, {
+      const { data } = await axios.delete(`/api/uploads`, {
         data: {
           name: file.name,
         },
@@ -140,9 +140,10 @@ const Example = () => {
       for (const file of files) {
         setStatus(file.name, "uploading");
 
-        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
-          file: file
-        }, {
+        const form = new FormData();
+        form.append('file', file);
+
+        const { data } = await axios.post(`/api/upload`, form, {
           headers: {
             "Content-Type": "multipart/form-data"
           },
