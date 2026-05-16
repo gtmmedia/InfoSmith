@@ -59,8 +59,6 @@ const EmbeddingIndicator = () => (
 );
 
 const Example = () => {
-  const rawApiBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
-  const apiBase = rawApiBase.replace(/\/api$/i, "");
   const [files, setFiles] = React.useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = React.useState<UploadedFile[]>([]);
   const [fileStatuses, setFileStatuses] = React.useState<Map<string, FileStatus>>(new Map());
@@ -84,7 +82,7 @@ const Example = () => {
   React.useEffect(() => {
     const loadUploadedFiles = async () => {
       try {
-        const { data } = await axios.get(`${apiBase}/api/uploads`);
+        const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/uploads`);
 
         if (data.success) {
           setUploadedFiles(data.files);
@@ -96,7 +94,7 @@ const Example = () => {
     }
 
     loadUploadedFiles();
-  }, [apiBase]);
+  }, []);
 
   const onFileReject = React.useCallback((file: File, message: string) => {
     toast(message, {
@@ -113,7 +111,7 @@ const Example = () => {
 
   const deleteUploadedFile = async (file: UploadedFile) => {
     try {
-      const { data } = await axios.delete(`${apiBase}/api/uploads`, {
+      const { data } = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/uploads`, {
         data: {
           name: file.name,
         },
@@ -142,10 +140,12 @@ const Example = () => {
       for (const file of files) {
         setStatus(file.name, "uploading");
 
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const { data } = await axios.post(`${apiBase}/api/upload`, formData, {
+        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
+          file: file
+        }, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          },
           onUploadProgress: (e) => {
             const total = e.total || 0;
             const pct = total > 0 ? Math.round((e.loaded / total) * 100) : 0;
